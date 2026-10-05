@@ -1,4 +1,6 @@
 include/CImg.h
 include/json.hpp
 img/*.png
+img/*.bin
 build
+tests/*.m
