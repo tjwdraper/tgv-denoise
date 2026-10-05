@@ -16,7 +16,9 @@ namespace opticalflow {
             Field(dim dimin) : _dimin(dimin), 
                                _step(1, dimin.x), 
                                _size(dimin.x*dimin.y),
-                               _field(new T[_size]) {}
+                               _field(new T[_size]) {
+                memset(_field, 0, _size*sizeof(T));
+            }
 
             Field(const Field<T>& fin) : _dimin(fin.get_dimensions()), 
                                          _step(fin.get_step()), 
