@@ -161,8 +161,8 @@ namespace tgv_denoise {
             tgv_denoise::update_p(px,py,ubar,vbarx,vbary,sigma);
             tgv_denoise::update_q(qxx, qyy, qxy, vbarx, vbary, sigma);
 
-            tgv_denoise::proj_p(px,py,alpha0);
-            tgv_denoise::proj_q(qxx,qyy,qxy,alpha1);
+            tgv_denoise::proj_p(px,py,alpha1);
+            tgv_denoise::proj_q(qxx,qyy,qxy,alpha0);
 
             // Track u
             uold = u;
@@ -170,6 +170,9 @@ namespace tgv_denoise {
             // Proximal operator
             tgv_denoise::update_u(u, px, py, tau);
             tgv_denoise::prox(u, f, tau, lambda);
+
+            // Update ubar
+            ubar = 2*u - uold;
 
             // Track v
             vxold = vx;
@@ -181,7 +184,26 @@ namespace tgv_denoise {
             // Update vbar
             vbarx = 2*vx - vxold;
             vbary = 2*vy - vyold;
+
+            if (opticalflow::image::norm(u-uold)/opticalflow::image::norm(u) < 1e-6)
+                break;
+
+            // Update some norms:
+            if (iter % 50 == 0) {
+                std::cout << "iter " << iter
+                    << " |u| = " << opticalflow::image::norm(u)
+                    << " |ubar| = " << opticalflow::image::norm(ubar)
+                    << " |v| = ("
+                    << opticalflow::image::norm(vx) << ", "
+                    << opticalflow::image::norm(vy) << ")"
+                    << " |vbar| = ("
+                    << opticalflow::image::norm(vbarx) << ", "
+                    << opticalflow::image::norm(vbary) << ")"
+                    << std::endl;
+            }
         }
+
+        return u;
     }
 }
 

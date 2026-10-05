@@ -1,13 +1,13 @@
 {
-    "path_image": "img/shepp_logan_noise.png",
-    "path_output": "img/shepp_logan_tgv_denoise.png",
+    "path_image": "img/shepp_logan_noise.bin",
+    "path_output": "img/shepp_logan_tgv_denoise.bin",
 
     "parameters": {
-        "alpha0": 1,
-        "alpha1": 2,
-        "tau": 0.25,
-        "sigma": 0.25,
-        "lambda": 0.01,
-        "niter": 100
+        "alpha0": 2.0,
+        "alpha1": 1.0,
+        "tau": 0.2,
+        "sigma": 0.2,
+        "lambda": 0.1,
+        "niter": 5000
     }
 }

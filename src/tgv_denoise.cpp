@@ -10,6 +10,7 @@
 #include "coord2d.hpp"
 #include "json.hpp"
 #include "Field.hpp"
+#include "tgv_denoise_2d.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Read json configuration file and store in structure
@@ -17,7 +18,7 @@
 struct json_config {
     // Path to files
     std::string path_image;
-    std::string path_output = "img/output.png";
+    std::string path_output = "image_in/output.tiff";
 
     // Denoising parameters
     double alpha0 = 1.0;
@@ -134,28 +135,67 @@ int main(int argc, char* argv[]) {
     json_config config = load_config(argv[1]);
 
     // Load image
-    std::cout << "Loading image...";
-    cimg_library::CImg<double> img_rgb(config.path_image.c_str());
-    std::cout << "Image loaded: " << img_rgb.width() << "x" << img_rgb.height() << std::endl;
+    std::ifstream file(config.path_image.c_str(), std::ios::binary);
+    if (!file)
+        throw std::runtime_error("Could not open image file.");
+
+    opticalflow::Image image_in(dim(256, 256));
+    file.read(reinterpret_cast<char*>(image_in.get_field()), image_in.get_size() * sizeof(double));
+
+    if (!file)
+        throw std::runtime_error("Could not read image file.");
+
+
+
+
+
+
+
+
+
+
+    // std::cout << "Loading image...";
+    // cimg_library::CImg<double> cimage_in(config.path_image.c_str());
+    // std::cout << "Image loaded: " << cimage_in.width() << "x" << cimage_in.height() << std::endl;
 
     // Convert to opticalflow type:
-    std::cout << "Convert to opticalflow type...";
-    const dim dimin(img_rgb.width(), img_rgb.height());
+    // std::cout << "Convert to opticalflow type...";
+    // const dim dimin(256, 256);
 
-    opticalflow::Image img(dimin);
-    convert_cimg_to_opticalflow(img, img_rgb);
+    // opticalflow::Image image_in(dimin);
+    // convert_cimg_to_opticalflow(image_in, cimage_in.data());
 
-    std::cout << "Complete!" << std::endl;
+    // std::cout << "Complete!" << std::endl;
+
+    // Denoise
+    opticalflow::Image image_out = tgv_denoise::denoise(
+        image_in,
+        config.tau,
+        config.sigma,
+        config.lambda,
+        config.alpha0,
+        config.alpha1,
+        config.niter
+    );
 
     // Write to output file
-    std::cout << "Converting to CImg type...";
-    cimg_library::CImg<double> img_out(img_rgb.width(), img_rgb.height(), 1); // 1 channel, gray-scale output
-    convert_opticalflow_to_cimg(img_out, img);
-    std::cout << "Complete!" << std::endl;
+    std::ofstream output(config.path_output.c_str(), std::ios::binary);
+    if (!output)
+        throw std::runtime_error("Could not open output file.");
 
-    std::cout << "Writing image...";
-    img_out.save(config.path_output.c_str());
-    std::cout << "Complete!" << std::endl;
+    output.write(reinterpret_cast<const char*>(image_out.get_field()), image_out.get_size()*sizeof(double));
+    if (!output)
+        throw std::runtime_error("Could not write output file.");
+
+
+    // std::cout << "Converting to CImg type...";
+    // cimg_library::CImg<double> cimage_out(cimage_in.width(), cimage_in.height(), 1); // 1 channel, gray-scale output
+    // convert_opticalflow_to_cimg(cimage_out, image_out);
+    // std::cout << "Complete!" << std::endl;
+
+    // std::cout << "Writing image...";
+    // cimage_out.save(config.path_output.c_str());
+    // std::cout << "Complete!" << std::endl;
 
     // Done
     return 0;
