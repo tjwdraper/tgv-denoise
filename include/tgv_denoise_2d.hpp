@@ -62,7 +62,11 @@ namespace tgv_denoise {
 
         for (std::size_t i = 0; i < dimin.x; ++i) {
             for (std::size_t j = 0; j < dimin.y; ++j) {
+                const double divqx = gradients::partial_x_backwards(qxx,i,j) + gradients::partial_y_backwards(qxy,i,j);
+                const double divqy = gradients::partial_y_backwards(qyy,i,j) + gradients::partial_x_backwards(qxy,i,j);
 
+                vx.set_val(vx.get_val(i,j) + tau * (px.get_val(i,j) + divqx), i,j);
+                vy.set_val(vy.get_val(i,j) + tau * (py.get_val(i,j) + divqy), i,j);
             }
         }
 
