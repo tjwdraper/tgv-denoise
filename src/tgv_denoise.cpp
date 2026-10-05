@@ -18,6 +18,14 @@ struct json_config {
     // Path to files
     std::string path_image;
     std::string path_output = "img/output.png";
+
+    // Denoising parameters
+    double alpha0 = 1.0;
+    double alpha1 = 2.0;
+    double tau = 0.25;
+    double sigma = 0.25;
+    double lambda = 0.01;
+    int niter = 100;
 };
 
 json_config load_config(const std::string& filename) {
@@ -37,6 +45,29 @@ json_config load_config(const std::string& filename) {
     // Set output path
     if (json.contains("path_output"))
         config.path_output = json.at("path_output").get<std::string>();
+
+    // Set denoising parameters
+    if (json.contains("parameters")) {
+        const auto& parameters = json.at("parameters");
+
+        if (parameters.contains("alpha0"))
+            config.alpha0 = parameters.at("alpha0").get<double>();
+
+        if (parameters.contains("alpha1"))
+            config.alpha1 = parameters.at("alpha1").get<double>();
+
+        if (parameters.contains("tau"))
+            config.tau = parameters.at("tau").get<double>();
+
+        if (parameters.contains("sigma"))
+            config.sigma = parameters.at("sigma").get<double>();
+
+        if (parameters.contains("lambda"))
+            config.lambda = parameters.at("lambda").get<double>();
+
+        if (parameters.contains("niter"))
+            config.niter = parameters.at("niter").get<int>(); 
+    }
 
     // Done
     return config;
