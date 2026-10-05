@@ -15,8 +15,9 @@
 // Read json configuration file and store in structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct json_config {
-    // Path to input image
+    // Path to files
     std::string path_image;
+    std::string path_output = "img/output.png";
 };
 
 json_config load_config(const std::string& filename) {
@@ -32,6 +33,10 @@ json_config load_config(const std::string& filename) {
 
     // Set the image path
     config.path_image = json.at("path_image").get<std::string>();
+
+    // Set output path
+    if (json.contains("path_output"))
+        config.path_output = json.at("path_output").get<std::string>();
 
     // Done
     return config;
@@ -63,7 +68,7 @@ void convert_cimg_to_opticalflow(opticalflow::Image& image, cimg_library::CImg<d
         }
     }
     else {
-        std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), number of channgels should be either 1 or 3.");
+        throw std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), number of channgels should be either 1 or 3.");
     }
 
     // Set data from opticalflow::Image target to raw data values
@@ -76,6 +81,13 @@ void convert_cimg_to_opticalflow(opticalflow::Image& image, cimg_library::CImg<d
     delete[] image_gs;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Write images from opticalflow::Image to cimg_library for saving 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void convert_opticalflow_to_cimg(cimg_library::CImg<double>& cimage, const opticalflow::Image& image) {
+    opticalflow::image::save_image(cimage.data(), image);
+    cimage *= 255;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Main function
@@ -102,6 +114,16 @@ int main(int argc, char* argv[]) {
     opticalflow::Image img(dimin);
     convert_cimg_to_opticalflow(img, img_rgb);
 
+    std::cout << "Complete!" << std::endl;
+
+    // Write to output file
+    std::cout << "Converting to CImg type...";
+    cimg_library::CImg<double> img_out(img_rgb.width(), img_rgb.height(), 1); // 1 channel, gray-scale output
+    convert_opticalflow_to_cimg(img_out, img);
+    std::cout << "Complete!" << std::endl;
+
+    std::cout << "Writing image...";
+    img_out.save(config.path_output.c_str());
     std::cout << "Complete!" << std::endl;
 
     // Done
