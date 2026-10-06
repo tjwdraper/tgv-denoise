@@ -5,11 +5,17 @@
 #include <map>
 
 enum class VerboseOption {SILENT, DISABLE_WARNING, VERBOSE};
+enum class ModelOption {TV, TGV};
 
 inline const std::map<std::string, VerboseOption> mapper_verbose_option {
     {"silent", VerboseOption::SILENT},
     {"disable-warnings", VerboseOption::DISABLE_WARNING},
     {"verbose", VerboseOption::VERBOSE}
+};
+
+inline const std::map<std::string, ModelOption> mapper_model_option {
+    {"TV", ModelOption::TV},
+    {"TGV", ModelOption::TGV}
 };
 
 #endif

@@ -1,0 +1,15 @@
+{
+    "path_image": "img/shepp_logan_noise.bin",
+    "path_output": "img/shepp_logan_tv_denoise.bin",
+
+    "model_option": "TV",
+
+    "parameters": {
+        "alpha0": 2.0,
+        "alpha1": 1.0,
+        "tau": 0.2,
+        "sigma": 0.2,
+        "lambda": 0.1,
+        "niter": 5000
+    }
+}

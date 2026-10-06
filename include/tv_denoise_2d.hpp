@@ -4,7 +4,7 @@
 #include "coord2d.hpp"
 #include "gradients.hpp"
 #include "Field.hpp"
-#include "ConfigurationOptions"
+#include "ConfigurationOptions.hpp"
 
 namespace tv_denoise {
     // Update operators
@@ -64,7 +64,7 @@ namespace tv_denoise {
     }
 
     // Primal-dual method TV-denoising algorithm
-    opticalflow::Image denoise(const opticalflow::Image& f) {
+    opticalflow::Image denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, int niter) {
         // Get the image dimensions
         const dim dimin = f.get_dimensions();
 
@@ -82,7 +82,7 @@ namespace tv_denoise {
         for (int iter = 0; iter < niter; ++iter) {
 
             tv_denoise::update_p(px,py,ubar,sigma);
-            tv_denoise::proj_p(px,py,alpha)
+            tv_denoise::proj_p(px,py,alpha0);
 
             uold = u;
 
@@ -103,6 +103,8 @@ namespace tv_denoise {
                     << std::endl;
             }
         }
+
+        return u;
     }
 }
 

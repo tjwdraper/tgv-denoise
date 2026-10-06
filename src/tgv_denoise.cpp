@@ -1,5 +1,5 @@
-#define cimg_display 0
-#include "CImg.h"
+// #define cimg_display 0
+// #include "CImg.h"
 
 #include <fstream>
 #include <string>
@@ -10,6 +10,7 @@
 #include "coord2d.hpp"
 #include "json.hpp"
 #include "Field.hpp"
+#include "tv_denoise_2d.hpp"
 #include "tgv_denoise_2d.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,6 +20,8 @@ struct json_config {
     // Path to files
     std::string path_image;
     std::string path_output = "image_in/output.tiff";
+
+    ModelOption option = ModelOption::TGV;
 
     // Denoising parameters
     double alpha0 = 1.0;
@@ -46,6 +49,14 @@ json_config load_config(const std::string& filename) {
     // Set output path
     if (json.contains("path_output"))
         config.path_output = json.at("path_output").get<std::string>();
+
+    // Read model option
+    if (json.contains("model_option")) {
+        std::string str_option = json.at("model_option").get<std::string>();
+        auto it = mapper_model_option.find(str_option);
+        if (it != mapper_model_option.end())
+            config.option = it->second;
+    }
 
     // Set denoising parameters
     if (json.contains("parameters")) {
@@ -78,48 +89,48 @@ json_config load_config(const std::string& filename) {
 // Read images using the cimg_library and convert to opticalflow::Image type from Field.hpp,
 // which is the input for this ImageRegistration class implementation
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void convert_cimg_to_opticalflow(opticalflow::Image& image, cimg_library::CImg<double>& cimage) {
-    const dim dimin(cimage.width(), cimage.height());
-    const std::size_t size = dimin.x * dimin.y;
+// void convert_cimg_to_opticalflow(opticalflow::Image& image, cimg_library::CImg<double>& cimage) {
+//     const dim dimin(cimage.width(), cimage.height());
+//     const std::size_t size = dimin.x * dimin.y;
 
-    if (image.get_dimensions() != dimin)
-        throw std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), dimensions of input and target have to equal");
+//     if (image.get_dimensions() != dimin)
+//         throw std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), dimensions of input and target have to equal");
 
-    // Convert cimage to grayscale, raw image. Average over 3 color channels
-    double* image_gs = new double[size];
-    double* cimage_rgb = cimage.data();
+//     // Convert cimage to grayscale, raw image. Average over 3 color channels
+//     double* image_gs = new double[size];
+//     double* cimage_rgb = cimage.data();
 
-    if (cimage.spectrum() == 1) {
-        for (std::size_t idx = 0; idx < size; ++idx) {
-            image_gs[idx] = cimage_rgb[idx];
-        }
-    }
-    else if (cimage.spectrum() == 3) {
-        for (std::size_t idx = 0; idx < size; ++idx) {
-            image_gs[idx] = (cimage_rgb[idx] + cimage_rgb[idx + size] + cimage_rgb[idx + 2*size]) / 3.0;
-        }
-    }
-    else {
-        throw std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), number of channgels should be either 1 or 3.");
-    }
+//     if (cimage.spectrum() == 1) {
+//         for (std::size_t idx = 0; idx < size; ++idx) {
+//             image_gs[idx] = cimage_rgb[idx];
+//         }
+//     }
+//     else if (cimage.spectrum() == 3) {
+//         for (std::size_t idx = 0; idx < size; ++idx) {
+//             image_gs[idx] = (cimage_rgb[idx] + cimage_rgb[idx + size] + cimage_rgb[idx + 2*size]) / 3.0;
+//         }
+//     }
+//     else {
+//         throw std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), number of channgels should be either 1 or 3.");
+//     }
 
-    // Set data from opticalflow::Image target to raw data values
-    opticalflow::image::load_image(image_gs, image);
+//     // Set data from opticalflow::Image target to raw data values
+//     opticalflow::image::load_image(image_gs, image);
 
-    // Normalize intensities between zero and one
-    opticalflow::image::normalize(image);
+//     // Normalize intensities between zero and one
+//     opticalflow::image::normalize(image);
 
-    // Free memory
-    delete[] image_gs;
-}
+//     // Free memory
+//     delete[] image_gs;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Write images from opticalflow::Image to cimg_library for saving 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void convert_opticalflow_to_cimg(cimg_library::CImg<double>& cimage, const opticalflow::Image& image) {
-    opticalflow::image::save_image(cimage.data(), image);
-    cimage *= 255;
-}
+// void convert_opticalflow_to_cimg(cimg_library::CImg<double>& cimage, const opticalflow::Image& image) {
+//     opticalflow::image::save_image(cimage.data(), image);
+//     cimage *= 255;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Main function
@@ -168,15 +179,28 @@ int main(int argc, char* argv[]) {
     // std::cout << "Complete!" << std::endl;
 
     // Denoise
-    opticalflow::Image image_out = tgv_denoise::denoise(
-        image_in,
-        config.tau,
-        config.sigma,
-        config.lambda,
-        config.alpha0,
-        config.alpha1,
-        config.niter
-    );
+    opticalflow::Image image_out(dim(256, 256));
+    if (config.option == ModelOption::TGV) {
+        image_out = tgv_denoise::denoise(
+            image_in,
+            config.tau,
+            config.sigma,
+            config.lambda,
+            config.alpha0,
+            config.alpha1,
+            config.niter
+        );
+    }
+    else if (config.option == ModelOption::TV) {
+        image_out = tv_denoise::denoise(
+            image_in,
+            config.tau,
+            config.sigma,
+            config.lambda,
+            config.alpha0,
+            config.niter
+        );
+    }
 
     // Write to output file
     std::ofstream output(config.path_output.c_str(), std::ios::binary);
