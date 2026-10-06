@@ -1,6 +1,3 @@
-// #define cimg_display 0
-// #include "CImg.h"
-
 #include <fstream>
 #include <string>
 #include <stdexcept>
@@ -167,6 +164,9 @@ int main(int argc, char* argv[]) {
     std::ofstream output(config.path_output.c_str(), std::ios::binary);
     if (!output)
         throw std::runtime_error("Could not open output file.");
+
+    output.write(reinterpret_cast<const char*>(&rows_d), sizeof(double));
+    output.write(reinterpret_cast<const char*>(&cols_d), sizeof(double));
 
     output.write(reinterpret_cast<const char*>(image_out.get_field()), image_out.get_size()*sizeof(double));
     if (!output)
