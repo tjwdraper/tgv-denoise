@@ -5,3 +5,4 @@ img/*.bin
 build
 tests/*.m
 docs
+legacy

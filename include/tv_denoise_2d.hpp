@@ -2,7 +2,7 @@
 #define _TV_DENOISE_2D_HPP_
 
 #include "coord2d.hpp"
-#include "gradients.hpp"
+//#include "gradients.hpp"
 #include "Field.hpp"
 #include "ConfigurationOptions.hpp"
 
@@ -15,8 +15,8 @@ namespace tv_denoise {
 
         for (std::size_t i = 0; i < dimin.x; ++i) {
             for (std::size_t j = 0; j < dimin.y; ++j) {
-                px.set_val(px.get_val(i,j) + sigma * (gradients::partial_x_forward(ubar, i, j)),i,j);
-                py.set_val(py.get_val(i,j) + sigma * (gradients::partial_y_forward(ubar, i, j)),i,j);
+                px.set_val(px.get_val(i,j) + sigma * (opticalflow::gradients::partial_x_forward(ubar, i, j)),i,j);
+                py.set_val(py.get_val(i,j) + sigma * (opticalflow::gradients::partial_y_forward(ubar, i, j)),i,j);
             }
         }
     }
@@ -28,7 +28,7 @@ namespace tv_denoise {
 
         for (std::size_t i = 0; i < dimin.x; ++i) {
             for (std::size_t j = 0; j < dimin.y; ++j) {
-                const double divp = gradients::partial_x_backwards(px,i,j) + gradients::partial_y_backwards(py,i,j);
+                const double divp = opticalflow::gradients::partial_x_backwards(px,i,j) + opticalflow::gradients::partial_y_backwards(py,i,j);
                 u.set_val(u.get_val(i,j) + tau*divp,i,j);
             }
         }

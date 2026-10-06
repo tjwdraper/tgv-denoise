@@ -2,7 +2,7 @@
 #define _TGV_DENOISE_2D_HPP_
 
 #include "coord2d.hpp"
-#include "gradients.hpp"
+//#include "gradients.hpp"
 #include "Field.hpp"
 #include "ConfigurationOptions.hpp"
 
@@ -16,8 +16,8 @@ namespace tgv_denoise {
 
         for (std::size_t i = 0; i < dimin.x; ++i) {
             for (std::size_t j = 0; j < dimin.y; ++j) {
-                px.set_val(px.get_val(i,j) + sigma * (gradients::partial_x_forward(ubar, i, j) - vbarx.get_val(i,j)),i,j);
-                py.set_val(py.get_val(i,j) + sigma * (gradients::partial_y_forward(ubar, i, j) - vbary.get_val(i,j)),i,j);
+                px.set_val(px.get_val(i,j) + sigma * (opticalflow::gradients::partial_x_forward(ubar, i, j) - vbarx.get_val(i,j)),i,j);
+                py.set_val(py.get_val(i,j) + sigma * (opticalflow::gradients::partial_y_forward(ubar, i, j) - vbary.get_val(i,j)),i,j);
             }
         }
     }
@@ -29,9 +29,9 @@ namespace tgv_denoise {
 
         for (std::size_t i = 0; i < dimin.x; ++i) {
             for (std::size_t j = 0; j < dimin.y; ++j) {
-                const double Evbarxx = gradients::partial_x_forward(vbarx, i, j);
-                const double Evbaryy = gradients::partial_y_forward(vbary, i, j);
-                const double Evbarxy = 0.5 * (gradients::partial_x_forward(vbary,i,j) + gradients::partial_y_forward(vbarx,i,j));
+                const double Evbarxx = opticalflow::gradients::partial_x_forward(vbarx, i, j);
+                const double Evbaryy = opticalflow::gradients::partial_y_forward(vbary, i, j);
+                const double Evbarxy = 0.5 * (opticalflow::gradients::partial_x_forward(vbary,i,j) + opticalflow::gradients::partial_y_forward(vbarx,i,j));
 
                 qxx.set_val(qxx.get_val(i,j) + sigma * Evbarxx,i,j);
                 qyy.set_val(qyy.get_val(i,j) + sigma * Evbaryy,i,j);
@@ -47,7 +47,7 @@ namespace tgv_denoise {
 
         for (std::size_t i = 0; i < dimin.x; ++i) {
             for (std::size_t j = 0; j < dimin.y; ++j) {
-                const double divp = gradients::partial_x_backwards(px,i,j) + gradients::partial_y_backwards(py,i,j);
+                const double divp = opticalflow::gradients::partial_x_backwards(px,i,j) + opticalflow::gradients::partial_y_backwards(py,i,j);
                 u.set_val(u.get_val(i,j) + tau*divp,i,j);
             }
         }
@@ -62,8 +62,8 @@ namespace tgv_denoise {
 
         for (std::size_t i = 0; i < dimin.x; ++i) {
             for (std::size_t j = 0; j < dimin.y; ++j) {
-                const double divqx = gradients::partial_x_backwards(qxx,i,j) + gradients::partial_y_backwards(qxy,i,j);
-                const double divqy = gradients::partial_y_backwards(qyy,i,j) + gradients::partial_x_backwards(qxy,i,j);
+                const double divqx = opticalflow::gradients::partial_x_backwards(qxx,i,j) + opticalflow::gradients::partial_y_backwards(qxy,i,j);
+                const double divqy = opticalflow::gradients::partial_y_backwards(qyy,i,j) + opticalflow::gradients::partial_x_backwards(qxy,i,j);
 
                 vx.set_val(vx.get_val(i,j) + tau * (px.get_val(i,j) + divqx), i,j);
                 vy.set_val(vy.get_val(i,j) + tau * (py.get_val(i,j) + divqy), i,j);
