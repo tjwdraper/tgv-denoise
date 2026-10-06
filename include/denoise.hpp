@@ -4,10 +4,23 @@
 #include "coord2d.hpp"
 //#include "gradients.hpp"
 #include "Field.hpp"
-#include "ConfigurationOptions.hpp"
+//#include "ConfigurationOptions.hpp"
 
-namespace tgv_denoise {
+namespace denoise {
     // Update operators
+    void update_p(opticalflow::Image& px, opticalflow::Image& py,
+                  const opticalflow::Image& ubar, 
+                  double sigma) {
+        const dim dimin = px.get_dimensions();
+
+        for (std::size_t i = 0; i < dimin.x; ++i) {
+            for (std::size_t j = 0; j < dimin.y; ++j) {
+                px.set_val(px.get_val(i,j) + sigma * (opticalflow::gradients::partial_x_forward(ubar, i, j)),i,j);
+                py.set_val(py.get_val(i,j) + sigma * (opticalflow::gradients::partial_y_forward(ubar, i, j)),i,j);
+            }
+        }
+    }
+    
     void update_p(opticalflow::Image& px, opticalflow::Image& py,
                   const opticalflow::Image& ubar, 
                   const opticalflow::Image& vbarx, const opticalflow::Image& vbary,
@@ -123,7 +136,7 @@ namespace tgv_denoise {
     }
 
     // The primal-dual TGV-denoising algorithm
-    opticalflow::Image denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, double alpha1, int niter) {
+    opticalflow::Image tgv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, double alpha1, int niter) {
         if (tau <= 0.0)
             throw std::runtime_error("Tau has to be a positive scalar.");
 
@@ -158,18 +171,18 @@ namespace tgv_denoise {
         // Primal-dual iterations
         for (int iter = 0; iter < niter; ++iter) {
             // Update dual variables
-            tgv_denoise::update_p(px,py,ubar,vbarx,vbary,sigma);
-            tgv_denoise::update_q(qxx, qyy, qxy, vbarx, vbary, sigma);
+            denoise::update_p(px,py,ubar,vbarx,vbary,sigma);
+            denoise::update_q(qxx, qyy, qxy, vbarx, vbary, sigma);
 
-            tgv_denoise::proj_p(px,py,alpha1);
-            tgv_denoise::proj_q(qxx,qyy,qxy,alpha0);
+            denoise::proj_p(px,py,alpha1);
+            denoise::proj_q(qxx,qyy,qxy,alpha0);
 
             // Track u
             uold = u;
 
             // Proximal operator
-            tgv_denoise::update_u(u, px, py, tau);
-            tgv_denoise::prox(u, f, tau, lambda);
+            denoise::update_u(u, px, py, tau);
+            denoise::prox(u, f, tau, lambda);
 
             // Update ubar
             ubar = 2*u - uold;
@@ -179,13 +192,13 @@ namespace tgv_denoise {
             vyold = vy;
 
             // Update v
-            tgv_denoise::update_v(vx, vy, px, py, qxx, qyy, qxy, tau);
+            denoise::update_v(vx, vy, px, py, qxx, qyy, qxy, tau);
 
             // Update vbar
             vbarx = 2*vx - vxold;
             vbary = 2*vy - vyold;
 
-            if (opticalflow::image::norm(u-uold)/opticalflow::image::norm(u) < 1e-6)
+            if (opticalflow::image::norm(u-uold)/opticalflow::image::norm(u) < 1e-4)
                 break;
 
             // Update some norms:
@@ -199,6 +212,50 @@ namespace tgv_denoise {
                     << " |vbar| = ("
                     << opticalflow::image::norm(vbarx) << ", "
                     << opticalflow::image::norm(vbary) << ")"
+                    << std::endl;
+            }
+        }
+
+        return u;
+    }
+
+    // The primal-dual TV-denoising algorithm
+    opticalflow::Image tv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, int niter) {
+        // Get the image dimensions
+        const dim dimin = f.get_dimensions();
+
+        // Initialize primal-dual variables
+        opticalflow::Image u(f);
+        opticalflow::Image ubar(f);
+
+        opticalflow::Image px(dimin);
+        opticalflow::Image py(dimin);
+
+        // Tracking variable
+        opticalflow::Image uold(dimin);
+
+        // Primal-dual iterations
+        for (int iter = 0; iter < niter; ++iter) {
+
+            denoise::update_p(px,py,ubar,sigma);
+            denoise::proj_p(px,py,alpha0);
+
+            uold = u;
+
+            denoise::update_u(u,px,py,tau);
+            denoise::prox(u,f,tau,lambda);
+
+            // Update ubar
+            ubar = 2*u - uold;
+
+            if (opticalflow::image::norm(u-uold)/opticalflow::image::norm(u) < 1e-4)
+                break;
+
+            // Update some norms:
+            if (iter % 50 == 0) {
+                std::cout << "iter " << iter
+                    << " |u| = " << opticalflow::image::norm(u)
+                    << " |ubar| = " << opticalflow::image::norm(ubar)
                     << std::endl;
             }
         }

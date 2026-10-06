@@ -6,12 +6,29 @@
 #include <stdexcept>
 #include <chrono>
 #include <vector>
+#include <map>
 
 #include "coord2d.hpp"
 #include "json.hpp"
 #include "Field.hpp"
-#include "tv_denoise_2d.hpp"
-#include "tgv_denoise_2d.hpp"
+#include "denoise.hpp"
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Create model options and methods to convert from string
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum class VerboseOption {SILENT, DISABLE_WARNING, VERBOSE};
+enum class ModelOption {TV, TGV};
+
+inline const std::map<std::string, VerboseOption> mapper_verbose_option {
+    {"silent", VerboseOption::SILENT},
+    {"disable-warnings", VerboseOption::DISABLE_WARNING},
+    {"verbose", VerboseOption::VERBOSE}
+};
+
+inline const std::map<std::string, ModelOption> mapper_model_option {
+    {"TV", ModelOption::TV},
+    {"TGV", ModelOption::TGV}
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Read json configuration file and store in structure
@@ -181,7 +198,7 @@ int main(int argc, char* argv[]) {
     // Denoise
     opticalflow::Image image_out(dim(256, 256));
     if (config.option == ModelOption::TGV) {
-        image_out = tgv_denoise::denoise(
+        image_out = denoise::tgv_denoise(
             image_in,
             config.tau,
             config.sigma,
@@ -192,7 +209,7 @@ int main(int argc, char* argv[]) {
         );
     }
     else if (config.option == ModelOption::TV) {
-        image_out = tv_denoise::denoise(
+        image_out = denoise::tv_denoise(
             image_in,
             config.tau,
             config.sigma,
