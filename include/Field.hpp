@@ -286,7 +286,8 @@ namespace opticalflow {
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
 
             if (i == dimin.x-1)
-                return field.get_val(0,j) - field.get_val(dimin.x-1,j);
+                return T(0.0);
+                //return field.get_val(0,j) - field.get_val(dimin.x-1,j);
                 //return field.get_val(i,j) - field.get_val(i-1,j);
             else
                 return field.get_val(i+1, j) - field.get_val(i,j);
@@ -298,7 +299,8 @@ namespace opticalflow {
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
 
             if (j == dimin.y-1)
-                return field.get_val(i,0) - field.get_val(i,dimin.y-1);
+                return T(0.0);
+                //return field.get_val(i,0) - field.get_val(i,dimin.y-1);
                 //return field.get_val(i,j) - field.get_val(i,j-1);
             else
                 return field.get_val(i, j+1) - field.get_val(i,j);
@@ -310,7 +312,10 @@ namespace opticalflow {
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
 
             if (i == 0)
-                return field.get_val(0,j) - field.get_val(dimin.x-1,j);
+                return field.get_val(0,j);
+                //return field.get_val(0,j) - field.get_val(dimin.x-1,j);
+            else if (i == dimin.x-1)
+                return -field.get_val(dimin.x-2,j);
             else
                 return field.get_val(i,j) - field.get_val(i-1,j);
         }
@@ -321,7 +326,10 @@ namespace opticalflow {
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
 
             if (j == 0)
-                return field.get_val(i,0) - field.get_val(i,dimin.y-1);
+                return field.get_val(i,0);
+                //return field.get_val(i,0) - field.get_val(i,dimin.y-1);
+            else if (j == dimin.y-1)
+                return -field.get_val(i,dimin.y-2);
             else
                 return field.get_val(i,j) - field.get_val(i,j-1);
         }

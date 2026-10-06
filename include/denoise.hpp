@@ -196,7 +196,7 @@ namespace denoise {
 
             // Check for convergence
             double relchange = opticalflow::image::norm(u-uold)/opticalflow::image::norm(u);
-            if (relchange < 1e-4)
+            if (relchange < 1e-6)
                 break;
 
             // Update some norms:
