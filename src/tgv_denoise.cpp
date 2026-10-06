@@ -103,53 +103,6 @@ json_config load_config(const std::string& filename) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Read images using the cimg_library and convert to opticalflow::Image type from Field.hpp,
-// which is the input for this ImageRegistration class implementation
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// void convert_cimg_to_opticalflow(opticalflow::Image& image, cimg_library::CImg<double>& cimage) {
-//     const dim dimin(cimage.width(), cimage.height());
-//     const std::size_t size = dimin.x * dimin.y;
-
-//     if (image.get_dimensions() != dimin)
-//         throw std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), dimensions of input and target have to equal");
-
-//     // Convert cimage to grayscale, raw image. Average over 3 color channels
-//     double* image_gs = new double[size];
-//     double* cimage_rgb = cimage.data();
-
-//     if (cimage.spectrum() == 1) {
-//         for (std::size_t idx = 0; idx < size; ++idx) {
-//             image_gs[idx] = cimage_rgb[idx];
-//         }
-//     }
-//     else if (cimage.spectrum() == 3) {
-//         for (std::size_t idx = 0; idx < size; ++idx) {
-//             image_gs[idx] = (cimage_rgb[idx] + cimage_rgb[idx + size] + cimage_rgb[idx + 2*size]) / 3.0;
-//         }
-//     }
-//     else {
-//         throw std::runtime_error("In convert_cimg_to_opticalflow(Image&, cimg_library::CImg<double>&), number of channgels should be either 1 or 3.");
-//     }
-
-//     // Set data from opticalflow::Image target to raw data values
-//     opticalflow::image::load_image(image_gs, image);
-
-//     // Normalize intensities between zero and one
-//     opticalflow::image::normalize(image);
-
-//     // Free memory
-//     delete[] image_gs;
-// }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Write images from opticalflow::Image to cimg_library for saving 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// void convert_opticalflow_to_cimg(cimg_library::CImg<double>& cimage, const opticalflow::Image& image) {
-//     opticalflow::image::save_image(cimage.data(), image);
-//     cimage *= 255;
-// }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // Main function
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[]) {
@@ -167,36 +120,27 @@ int main(int argc, char* argv[]) {
     if (!file)
         throw std::runtime_error("Could not open image file.");
 
-    opticalflow::Image image_in(dim(256, 256));
+    // Read the image dimensions
+    double rows_d, cols_d;
+    file.read(reinterpret_cast<char*>(&rows_d), sizeof(double));
+    file.read(reinterpret_cast<char*>(&cols_d), sizeof(double));
+    if (!file)
+        throw std::runtime_error("Could not read image dimensions");
+
+    const dim dimin(
+        static_cast<std::size_t>(rows_d),
+        static_cast<std::size_t>(cols_d)
+    );
+
+    // Read the image contents
+    opticalflow::Image image_in(dimin);
     file.read(reinterpret_cast<char*>(image_in.get_field()), image_in.get_size() * sizeof(double));
 
     if (!file)
         throw std::runtime_error("Could not read image file.");
 
-
-
-
-
-
-
-
-
-
-    // std::cout << "Loading image...";
-    // cimg_library::CImg<double> cimage_in(config.path_image.c_str());
-    // std::cout << "Image loaded: " << cimage_in.width() << "x" << cimage_in.height() << std::endl;
-
-    // Convert to opticalflow type:
-    // std::cout << "Convert to opticalflow type...";
-    // const dim dimin(256, 256);
-
-    // opticalflow::Image image_in(dimin);
-    // convert_cimg_to_opticalflow(image_in, cimage_in.data());
-
-    // std::cout << "Complete!" << std::endl;
-
     // Denoise
-    opticalflow::Image image_out(dim(256, 256));
+    opticalflow::Image image_out(dimin);
     if (config.option == ModelOption::TGV) {
         image_out = denoise::tgv_denoise(
             image_in,
@@ -227,16 +171,6 @@ int main(int argc, char* argv[]) {
     output.write(reinterpret_cast<const char*>(image_out.get_field()), image_out.get_size()*sizeof(double));
     if (!output)
         throw std::runtime_error("Could not write output file.");
-
-
-    // std::cout << "Converting to CImg type...";
-    // cimg_library::CImg<double> cimage_out(cimage_in.width(), cimage_in.height(), 1); // 1 channel, gray-scale output
-    // convert_opticalflow_to_cimg(cimage_out, image_out);
-    // std::cout << "Complete!" << std::endl;
-
-    // std::cout << "Writing image...";
-    // cimage_out.save(config.path_output.c_str());
-    // std::cout << "Complete!" << std::endl;
 
     // Done
     return 0;

@@ -51,7 +51,7 @@ namespace opticalflow {
             }
 
             const T& get_val(std::size_t i, std::size_t j) const {
-                #ifdef _OPTICALFLOW_DEBUG
+                #ifdef OPTICALFLOW_DEBUG
                     Field::check_idx(i, j);
                 #endif
                 return _field[i * _step.x + j * _step.y];
