@@ -4,3 +4,4 @@ img/*.png
 img/*.bin
 build
 tests/*.m
+docs
