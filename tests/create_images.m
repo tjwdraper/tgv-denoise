@@ -9,7 +9,7 @@ end
 
 %% Shepp-Logan phantom
 img = phantom();
-img_noise = imnoise(img, 'gaussian', 0, 0.005);
+img_noise = imnoise(img, 'gaussian', 0, 0.001);
 
 fid = fopen('img/shepp_logan_gt.bin', 'wb');
 fwrite(fid, size(img,1), 'double');
@@ -31,7 +31,7 @@ end
 for j = 1+64:size(img,2)-64
     img(1+64:end-64,j) = 1 - (j-1 - 64)/127;
 end
-img_noise = imnoise(img, 'gaussian', 0, 0.005);
+img_noise = imnoise(img, 'gaussian', 0, 0.001);
 
 fid = fopen('img/ramp_gt.bin', 'wb');
 fwrite(fid, size(img, 1), 'double');
