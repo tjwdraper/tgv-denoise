@@ -3,7 +3,7 @@
 This repository contains a small, header-only implementation for 2D image denoising, using the total variation (TV) and total-generalized variation (TGV) models, using primal-dual optimization. The implementation is given in ```./include/denoise.hpp```.
 
 ## Compilation:
-The ```./src``` directory contains a .cpp main funtion to read a noisy image, denoise with either TV or the TGV algorithm, and save the output. To compile, first add the [(single-include) nlohmann json parser](https://github.com/nlohmann/json) to the ```include``` folder, following the CMake commands:
+The ```./src``` directory contains a .cpp main funtion to read a noisy image, denoise with either TV or the TGV algorithm, and save the output. To compile, first add the [(single-include) nlohmann json parser](https://github.com/nlohmann/json) to the ```include``` folder, following the CMake commands (Visual Studio generator):
 
 ```
 cmake -S . -B build
