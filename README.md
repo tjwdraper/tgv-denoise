@@ -28,7 +28,8 @@ The compiled executable takes a .json configuration file as input. The configura
         "sigma": 0.2,        // optional: default = 0.25
         "lambda": 0.1,       // optional: default = 0.01
         "niter": 1000,       // optional: default = 1000
-        "convergence": 1e-6  // optional: default = 1e-5;
+        "convergence": 1e-6, // optional: default = 1e-5;
+        "verbose": "verbose" // optional: default = "silent"
     }
 }
 ```
