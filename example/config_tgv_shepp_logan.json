@@ -9,6 +9,7 @@
         "sigma": 0.2,
         "lambda": 0.04,
         "niter": 5000,
-        "convergence": 1e-6
+        "convergence": 1e-6,
+        "verbose": "verbose"
     }
 }

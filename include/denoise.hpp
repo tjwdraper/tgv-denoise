@@ -4,6 +4,11 @@
 #include "coord2d.hpp"
 #include "Field.hpp"
 
+
+// Model options
+enum class VerboseOption {SILENT, DISABLE_WARNING, VERBOSE};
+enum class ModelOption {TV, TGV};
+
 namespace denoise {
     // Update operators
     void update_p(opticalflow::Image& px, opticalflow::Image& py, const opticalflow::Image& ubar, double sigma) {        
@@ -132,7 +137,7 @@ namespace denoise {
     }
 
     // The primal-dual TGV-denoising algorithm
-    opticalflow::Image tgv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, double alpha1, int niter, double convergence) {
+    opticalflow::Image tgv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, double alpha1, int niter, double convergence, VerboseOption verbose) {
         if (tau <= 0.0)
             throw std::runtime_error("Tau has to be a positive scalar.");
 
@@ -200,18 +205,15 @@ namespace denoise {
                 break;
 
             // Update some norms:
-            if (iter % 50 == 0) {
-                std::cout << "iter " << iter
-                    << " |u-u|/|u| = " << relchange
-                    << std::endl;
-            }
+            if (iter % 50 == 0 && verbose == VerboseOption::VERBOSE)
+                std::cout << "iter " << iter << " |u-u|/|u| = " << relchange << std::endl;
         }
 
         return u;
     }
 
     // The primal-dual TV-denoising algorithm
-    opticalflow::Image tv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, int niter, double convergence) {
+    opticalflow::Image tv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, int niter, double convergence, VerboseOption verbose) {
         // Get the image dimensions
         const dim dimin = f.get_dimensions();
 
@@ -244,11 +246,8 @@ namespace denoise {
                 break;
 
             // Update some norms:
-            if (iter % 50 == 0) {
-                std::cout << "iter " << iter
-                    << " |u-u|/|u| = " << relchange
-                    << std::endl;
-            }
+            if (iter % 50 == 0 && verbose == VerboseOption::VERBOSE)
+                std::cout << "iter " << iter << " |u-u|/|u| = " << relchange << std::endl;
         }
 
         return u;

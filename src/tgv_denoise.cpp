@@ -11,14 +11,10 @@
 #include "denoise.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Create model options and methods to convert from string
+// Create methods to convert string to model options
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-enum class VerboseOption {SILENT, DISABLE_WARNING, VERBOSE};
-enum class ModelOption {TV, TGV};
-
 inline const std::map<std::string, VerboseOption> mapper_verbose_option {
     {"silent", VerboseOption::SILENT},
-    {"disable-warnings", VerboseOption::DISABLE_WARNING},
     {"verbose", VerboseOption::VERBOSE}
 };
 
@@ -45,6 +41,9 @@ struct json_config {
     double lambda = 0.01;
     int niter = 1000;
     double convergence = 1e-5;
+
+    // Verbose
+    VerboseOption verbose = VerboseOption::SILENT;
 };
 
 json_config load_config(const std::string& filename) {
@@ -97,6 +96,13 @@ json_config load_config(const std::string& filename) {
 
         if (parameters.contains("convergence"))
             config.convergence = parameters.at("convergence").get<double>();
+
+        if (parameters.contains("verbose")) {
+            std::string str_option = parameters.at("verbose").get<std::string>();
+            auto it = mapper_verbose_option.find(str_option);
+            if (it != mapper_verbose_option.end())
+                config.verbose = it->second;
+        }
     }
 
     // Done
@@ -142,6 +148,8 @@ int main(int argc, char* argv[]) {
 
     // Denoise
     opticalflow::Image image_out(dimin);
+    
+    const auto start = std::chrono::steady_clock::now();
     if (config.option == ModelOption::TGV) {
         image_out = denoise::tgv_denoise(
             image_in,
@@ -151,7 +159,8 @@ int main(int argc, char* argv[]) {
             config.alpha0,
             config.alpha1,
             config.niter,
-            config.convergence
+            config.convergence,
+            config.verbose
         );
     }
     else if (config.option == ModelOption::TV) {
@@ -162,9 +171,17 @@ int main(int argc, char* argv[]) {
             config.lambda,
             config.alpha0,
             config.niter,
-            config.convergence
+            config.convergence,
+            config.verbose
         );
     }
+    const auto end = std::chrono::steady_clock::now();
+
+    if (config.verbose == VerboseOption::VERBOSE) {
+        const std::chrono::duration<double> elapsed = end-start;
+        std::cout << "Runtime (s): " << elapsed.count() << "\n";
+    }
+        
 
     // Write to output file
     std::ofstream output(config.path_output.c_str(), std::ios::binary);
