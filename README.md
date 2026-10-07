@@ -23,7 +23,7 @@ The compiled executable takes a .json configuration file as input. The configura
     // optional:
     "parameters": {
         "alpha0": 2.0,       // optional: default = 1.0
-        "alpha1: 1.0",       // optional: default = 2.0
+        "alpha1: 1.0",       // optional: default = 2.0 - only for TGV model
         "tau": 0.2,          // optional: default = 0.25
         "sigma": 0.2,        // optional: default = 0.25
         "lambda": 0.1,       // optional: default = 0.01
@@ -46,5 +46,3 @@ The ramp image has a constant gradient throughout the image, with a sharp edge a
 ![ramp](ramp.png)
 
 The TV model introduces the "staircase" artifacts in the denoised image, which are not present when using the TGV model.
-
-
