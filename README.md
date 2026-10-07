@@ -1,4 +1,4 @@
-# A header-only implementation of TV and TGV denoising
+# A header-only implementation of primal-dual algorithms for TV and TGV image denoising
 
 This repository contains a small, header-only implementation for 2D image denoising, using the total variation (TV) and total-generalized variation (TGV) models, using primal-dual optimization. The implementation is given in ```./include/denoise.hpp```.
 
