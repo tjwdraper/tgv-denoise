@@ -22,8 +22,8 @@ The compiled executable takes a .json configuration file as input. The configura
 
     // optional:
     "parameters": {
-        "alpha0": 2.0,       // optional: default = 1.0
-        "alpha1: 1.0",       // optional: default = 2.0 - only for TGV model
+        "alpha0": 1.0,       // optional: default = 1.0
+        "alpha1: 2.0",       // optional: default = 2.0 - only for TGV model
         "tau": 0.2,          // optional: default = 0.25
         "sigma": 0.2,        // optional: default = 0.25
         "lambda": 0.1,       // optional: default = 0.01
