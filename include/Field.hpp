@@ -165,7 +165,6 @@ namespace opticalflow {
     };
 
     using Image = Field<double>;
-    using Motion = Field<vector2d>;
 
     namespace image {
         // TODO: change to mxArray* in future or separate from namespace
@@ -236,46 +235,6 @@ namespace opticalflow {
         }
     }
 
-    namespace motion {
-        inline void save_motion(double* vals, const Motion& motion) {
-            std::size_t N = motion.get_size();
-            for (std::size_t idx = 0; idx < N; ++idx) {
-                const vector2d v = motion.get_val(idx);
-                vals[idx + 0*N] = v.x;
-                vals[idx + 1*N] = v.y;
-            }
-        }
-
-        inline double norm(const Motion& motion) {
-            double norm(0.0);
-            for (std::size_t idx = 0; idx < motion.get_size(); ++idx) 
-                norm += normsq(motion.get_val(idx));
-            return std::sqrt(norm);
-        }
-
-        inline vector2d max(const Motion& motion) {
-            vector2d max(motion.get_val(0));
-            if (motion.get_size() == 1)
-                return max;
-
-            for (std::size_t idx = 1; idx < motion.get_size(); ++idx)
-                if (motion.get_val(idx) > max)
-                    max = motion.get_val(idx);
-            return max;
-        }
-
-        inline vector2d min(const Motion& motion) {
-            vector2d min(motion.get_val(0));
-            if (motion.get_size() == 1)
-                return min;
-
-            for (std::size_t idx = 1; idx < motion.get_size(); ++idx)
-                if (motion.get_val(idx) < min)
-                    min = motion.get_val(idx);
-            return min;
-        }
-    }
-
     namespace gradients {
         template <typename T>
         inline T partial_x_forward(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
@@ -285,8 +244,6 @@ namespace opticalflow {
 
             if (i == dimin.x-1)
                 return T(0.0);
-                //return field.get_val(0,j) - field.get_val(dimin.x-1,j);
-                //return field.get_val(i,j) - field.get_val(i-1,j);
             else
                 return field.get_val(i+1, j) - field.get_val(i,j);
         }
@@ -298,8 +255,6 @@ namespace opticalflow {
 
             if (j == dimin.y-1)
                 return T(0.0);
-                //return field.get_val(i,0) - field.get_val(i,dimin.y-1);
-                //return field.get_val(i,j) - field.get_val(i,j-1);
             else
                 return field.get_val(i, j+1) - field.get_val(i,j);
         }
@@ -311,7 +266,6 @@ namespace opticalflow {
 
             if (i == 0)
                 return field.get_val(0,j);
-                //return field.get_val(0,j) - field.get_val(dimin.x-1,j);
             else if (i == dimin.x-1)
                 return -field.get_val(dimin.x-2,j);
             else
@@ -325,7 +279,6 @@ namespace opticalflow {
 
             if (j == 0)
                 return field.get_val(i,0);
-                //return field.get_val(i,0) - field.get_val(i,dimin.y-1);
             else if (j == dimin.y-1)
                 return -field.get_val(i,dimin.y-2);
             else
