@@ -146,23 +146,23 @@ namespace denoise {
         opticalflow::Image u(f);
         opticalflow::Image ubar(f);
 
-        opticalflow::Image vx(dimin);
-        opticalflow::Image vy(dimin);
+        opticalflow::Image vx(dimin); vx.fill(0.0);
+        opticalflow::Image vy(dimin); vy.fill(0.0);
 
-        opticalflow::Image vbarx(dimin);
-        opticalflow::Image vbary(dimin);
+        opticalflow::Image vbarx(dimin); vbarx.fill(0.0);
+        opticalflow::Image vbary(dimin); vbary.fill(0.0);
 
-        opticalflow::Image px(dimin);
-        opticalflow::Image py(dimin);
+        opticalflow::Image px(dimin); px.fill(0.0);
+        opticalflow::Image py(dimin); py.fill(0.0);
 
-        opticalflow::Image qxx(dimin);
-        opticalflow::Image qyy(dimin);
-        opticalflow::Image qxy(dimin);
+        opticalflow::Image qxx(dimin); qxx.fill(0.0);
+        opticalflow::Image qyy(dimin); qyy.fill(0.0);
+        opticalflow::Image qxy(dimin); qxy.fill(0.0);
 
         // Tracking variables
-        opticalflow::Image uold(dimin);
-        opticalflow::Image vxold(dimin);
-        opticalflow::Image vyold(dimin);
+        opticalflow::Image uold(dimin); uold.fill(0.0);
+        opticalflow::Image vxold(dimin); vxold.fill(0.0);
+        opticalflow::Image vyold(dimin); vyold.fill(0.0);
 
         // Primal-dual iterations
         for (int iter = 0; iter < niter; ++iter) {
@@ -219,11 +219,11 @@ namespace denoise {
         opticalflow::Image u(f);
         opticalflow::Image ubar(f);
 
-        opticalflow::Image px(dimin);
-        opticalflow::Image py(dimin);
+        opticalflow::Image px(dimin); px.fill(0.0);
+        opticalflow::Image py(dimin); py.fill(0.0);
 
         // Tracking variable
-        opticalflow::Image uold(dimin);
+        opticalflow::Image uold(dimin); uold.fill(0.0);
 
         // Primal-dual iterations
         for (int iter = 0; iter < niter; ++iter) {
