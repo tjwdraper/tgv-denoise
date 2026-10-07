@@ -10,6 +10,57 @@ enum class VerboseOption {SILENT, DISABLE_WARNING, VERBOSE};
 enum class ModelOption {TV, TGV};
 
 namespace denoise {
+    // Norms:
+    double tv_norm(opticalflow::Image& u) {
+        const dim dimin = u.get_dimensions();
+
+        double norm(0.0);
+        for (std::size_t j = 0; j < dimin.y; ++j) {
+            for (std::size_t i = 0; i < dimin.x; ++i) {
+                double uxv = opticalflow::gradients::partial_x_forward(u, i, j);
+                double uyv = opticalflow::gradients::partial_y_forward(u, i, j);
+
+                norm += std::sqrt(uxv*uxv + uyv*uyv);
+            }
+        }
+        return norm;
+    }
+
+    double tv_residual_norm(const opticalflow::Image& u, const opticalflow::Image& vx, const opticalflow::Image& vy) {
+        const dim dimin = u.get_dimensions();
+
+        double norm(0.0);
+        for (std::size_t j = 0; j < dimin.y; ++j) {
+            for (std::size_t i = 0; i < dimin.x; ++i) {
+                double uxv = opticalflow::gradients::partial_x_forward(u, i, j) - vx.get_val(i,j);
+                double uyv = opticalflow::gradients::partial_y_forward(u, i, j) - vy.get_val(i,j);
+
+                norm += std::sqrt(uxv*uxv + uyv*uyv);
+            }
+        }
+        return norm;
+    }
+
+    double l1_E_norm(const opticalflow::Image& vx, const opticalflow::Image& vy) {
+        const dim dimin = vx.get_dimensions();
+
+        double norm(0.0);
+        for (std::size_t j = 0; j < dimin.y; ++j) {
+            for (std::size_t i = 0; i < dimin.x; ++i) {
+                const double Evbarxx = opticalflow::gradients::partial_x_forward(vx, i, j);
+                const double Evbaryy = opticalflow::gradients::partial_y_forward(vy, i, j);
+                const double Evbarxy = 0.5 * (opticalflow::gradients::partial_x_forward(vy,i,j) + 
+                                              opticalflow::gradients::partial_y_forward(vx,i,j));
+
+                norm += std::sqrt(Evbarxx*Evbarxx + Evbaryy*Evbaryy + 2*Evbarxy*Evbarxy);
+            }
+        }
+        return norm;
+
+    }
+
+    
+
     // Update operators
     void update_p(opticalflow::Image& px, opticalflow::Image& py, const opticalflow::Image& ubar, double sigma) {        
         const dim dimin = px.get_dimensions();
@@ -45,7 +96,8 @@ namespace denoise {
             for (std::size_t i = 0; i < dimin.x; ++i) {
                 const double Evbarxx = opticalflow::gradients::partial_x_forward(vbarx, i, j);
                 const double Evbaryy = opticalflow::gradients::partial_y_forward(vbary, i, j);
-                const double Evbarxy = 0.5 * (opticalflow::gradients::partial_x_forward(vbary,i,j) + opticalflow::gradients::partial_y_forward(vbarx,i,j));
+                const double Evbarxy = 0.5 * (opticalflow::gradients::partial_x_forward(vbary,i,j) + 
+                                              opticalflow::gradients::partial_y_forward(vbarx,i,j));
 
                 qxx.set_val(qxx.get_val(i,j) + sigma * Evbarxx,i,j);
                 qyy.set_val(qyy.get_val(i,j) + sigma * Evbaryy,i,j);
@@ -205,8 +257,14 @@ namespace denoise {
                 break;
 
             // Update some norms:
-            if (iter % 50 == 0 && verbose == VerboseOption::VERBOSE)
-                std::cout << "iter " << iter << " |u-u|/|u| = " << relchange << std::endl;
+            if (iter % 50 == 0 && verbose == VerboseOption::VERBOSE) {
+                std::cout << "iter " << iter 
+                    << "\t|u_new-u|/|u_new| = " << relchange 
+                    << "\t1/(2*lambda)*|u-f|^2 = " << opticalflow::image::normsq(u-f) / (2*lambda)
+                    << "\talpha_1 * |Du - v|_1 = " << denoise::tv_residual_norm(u,vx,vy) * alpha1
+                    << "\talpha_0 * |Ev|_1 = " << denoise::l1_E_norm(vx,vy) * alpha0
+                    << std::endl;
+            }
         }
 
         return u;
@@ -247,7 +305,11 @@ namespace denoise {
 
             // Update some norms:
             if (iter % 50 == 0 && verbose == VerboseOption::VERBOSE)
-                std::cout << "iter " << iter << " |u-u|/|u| = " << relchange << std::endl;
+                std::cout << "iter " << iter 
+                    << "\t|u_new-u|/|u_new| = " << relchange 
+                    << "\t1/(2*lambda)*|u-f|^2 = " << opticalflow::image::normsq(u-f) / (2*lambda)
+                    << "\talpha_0 * |Du|_1 = " << denoise::tv_norm(u)
+                    << std::endl;
         }
 
         return u;

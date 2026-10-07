@@ -177,11 +177,15 @@ namespace opticalflow {
             std::copy(image.get_field(), image.get_field() + image.get_size(), vals);
         }
 
-        inline double norm(const Image& image) {
+        inline double normsq(const Image& image) {
             double norm(0.0);
             for (std::size_t idx = 0; idx < image.get_size(); ++idx) 
                 norm += std::pow(image.get_val(idx), 2);
-            return std::sqrt(norm);
+            return norm;
+        }
+
+        inline double norm(const Image& image) {
+            return std::sqrt(opticalflow::image::normsq(image));
         }
 
         inline double sum(const Image& image) {
