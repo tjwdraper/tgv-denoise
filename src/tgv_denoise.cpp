@@ -43,8 +43,8 @@ struct json_config {
     double tau = 0.25;
     double sigma = 0.25;
     double lambda = 0.01;
-    int niter = 100;
-    double convergence = 1e-4;
+    int niter = 1000;
+    double convergence = 1e-5;
 };
 
 json_config load_config(const std::string& filename) {
