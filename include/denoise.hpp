@@ -10,7 +10,9 @@ enum class VerboseOption {SILENT, DISABLE_WARNING, VERBOSE};
 enum class ModelOption {TV, TGV};
 
 namespace denoise {
-    // Norms:
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Norms - used to track convergence:
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     double tv_norm(opticalflow::Image& u) {
         const dim dimin = u.get_dimensions();
 
@@ -60,8 +62,9 @@ namespace denoise {
     }
 
     
-
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     // Update operators
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     void update_p(opticalflow::Image& px, opticalflow::Image& py, const opticalflow::Image& ubar, double sigma) {        
         const dim dimin = px.get_dimensions();
 
@@ -138,7 +141,9 @@ namespace denoise {
 
     }
 
-    // Projection operators
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Projection and proximal operators
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     void proj_p(opticalflow::Image& px, opticalflow::Image& py, double alpha) {
         const dim dimin = px.get_dimensions();
 
@@ -177,7 +182,6 @@ namespace denoise {
         }
     }
 
-    // Proximal operator
     void prox(opticalflow::Image& u, const opticalflow::Image& f, double tau, double lambda) {
         const dim dimin = u.get_dimensions();
 

@@ -241,7 +241,7 @@ namespace opticalflow {
 
     namespace gradients {
         template <typename T>
-        inline T partial_x_forward(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
+        inline T dx(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
             const dim dimin = field.get_dimensions();
                 if (dimin.x < 2)
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
@@ -252,7 +252,7 @@ namespace opticalflow {
                 return field.get_val(i+1, j) - field.get_val(i,j);
         }
         template <typename T>
-        inline T partial_y_forward(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
+        inline T dy(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
             const dim dimin = field.get_dimensions();
                 if (dimin.y < 2)
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
@@ -263,7 +263,7 @@ namespace opticalflow {
                 return field.get_val(i, j+1) - field.get_val(i,j);
         }
         template <typename T>
-        inline T partial_x_backwards(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
+        inline T adjoint_dx(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
             const dim dimin = field.get_dimensions();
                 if (dimin.x < 2)
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
@@ -276,7 +276,7 @@ namespace opticalflow {
                 return field.get_val(i,j) - field.get_val(i-1,j);
         }
         template <typename T>
-        inline T partial_y_backwards(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
+        inline T adjoint_dy(const opticalflow::Field<T>& field, const std::size_t i, const std::size_t j) {
             const dim dimin = field.get_dimensions();
                 if (dimin.y < 2)
                     throw std::runtime_error("In T gradients::partial_x(const Field<T>&, const std::size_t, const std::size_t), x-dimension must be at least 2.");
