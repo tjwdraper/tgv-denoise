@@ -132,7 +132,7 @@ namespace denoise {
     }
 
     // The primal-dual TGV-denoising algorithm
-    opticalflow::Image tgv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, double alpha1, int niter) {
+    opticalflow::Image tgv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, double alpha1, int niter, double convergence) {
         if (tau <= 0.0)
             throw std::runtime_error("Tau has to be a positive scalar.");
 
@@ -196,7 +196,7 @@ namespace denoise {
 
             // Check for convergence
             double relchange = opticalflow::image::norm(u-uold)/opticalflow::image::norm(u);
-            if (relchange < 1e-6)
+            if (relchange < convergence)
                 break;
 
             // Update some norms:
@@ -211,7 +211,7 @@ namespace denoise {
     }
 
     // The primal-dual TV-denoising algorithm
-    opticalflow::Image tv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, int niter) {
+    opticalflow::Image tv_denoise(const opticalflow::Image& f, double tau, double sigma, double lambda, double alpha0, int niter, double convergence) {
         // Get the image dimensions
         const dim dimin = f.get_dimensions();
 
@@ -239,14 +239,14 @@ namespace denoise {
             // Update ubar
             ubar = 2*u - uold;
 
-            if (opticalflow::image::norm(u-uold)/opticalflow::image::norm(u) < 1e-4)
+            double relchange = opticalflow::image::norm(u-uold)/opticalflow::image::norm(u);
+            if (relchange < convergence)
                 break;
 
             // Update some norms:
             if (iter % 50 == 0) {
                 std::cout << "iter " << iter
-                    << " |u| = " << opticalflow::image::norm(u)
-                    << " |ubar| = " << opticalflow::image::norm(ubar)
+                    << " |u-u|/|u| = " << relchange
                     << std::endl;
             }
         }

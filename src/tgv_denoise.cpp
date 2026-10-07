@@ -44,6 +44,7 @@ struct json_config {
     double sigma = 0.25;
     double lambda = 0.01;
     int niter = 100;
+    double convergence = 1e-4;
 };
 
 json_config load_config(const std::string& filename) {
@@ -93,6 +94,9 @@ json_config load_config(const std::string& filename) {
 
         if (parameters.contains("niter"))
             config.niter = parameters.at("niter").get<int>(); 
+
+        if (parameters.contains("convergence"))
+            config.convergence = parameters.at("convergence").get<double>();
     }
 
     // Done
@@ -146,7 +150,8 @@ int main(int argc, char* argv[]) {
             config.lambda,
             config.alpha0,
             config.alpha1,
-            config.niter
+            config.niter,
+            config.convergence
         );
     }
     else if (config.option == ModelOption::TV) {
@@ -156,7 +161,8 @@ int main(int argc, char* argv[]) {
             config.sigma,
             config.lambda,
             config.alpha0,
-            config.niter
+            config.niter,
+            config.convergence
         );
     }
 

@@ -2,7 +2,10 @@ clc;
 clear all;
 close all;
 
-pkg load image;
+isOctave = exist('OCTAVE_VERSION', 'builtin') ~= 0;
+if isOctave
+    pkg load image;
+end
 
 for example = {'shepp_logan', 'ramp'}
   filename = ['img/', example{1}, '_gt.bin'];

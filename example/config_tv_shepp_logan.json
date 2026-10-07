@@ -10,6 +10,7 @@
         "tau": 0.2,
         "sigma": 0.2,
         "lambda": 0.1,
-        "niter": 5000
+        "niter": 5000,
+        "convergence": 1e-4
     }
 }
