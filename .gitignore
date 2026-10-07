@@ -1,7 +1,8 @@
 include/CImg.h
 include/json.hpp
-img/*.png
-img/*.bin
+img/ramp_tv_denoise.bin
+img/ramp_tgv_denoise.bin
+img/shepp_logan_*.bin
 build
 docs
 legacy

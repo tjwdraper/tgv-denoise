@@ -34,10 +34,13 @@ for example = {'shepp_logan', 'ramp'}
   fclose(fid);
 
   figure();
-  subplot(221); imagesc(img); title('Original image');
-  subplot(222); imagesc(img_noise); title('Noisy image');
-  subplot(223); imagesc(img_tv); title('TV image');
-  subplot(224); imagesc(img_tgv); title('TGV image');
+  subplot(221); imagesc(img); title('Original image'); axis off;
+  subplot(222); imagesc(img_noise); title('Noisy image'); axis off;
+  subplot(223); imagesc(img_tv); title('TV image'); axis off;
+  subplot(224); imagesc(img_tgv); title('TGV image'); axis off;
+
+  colormap gray;
+  
 end
 
 clear functions;
