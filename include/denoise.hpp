@@ -19,8 +19,8 @@ namespace denoise {
         double norm(0.0);
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                double uxv = opticalflow::gradients::partial_x_forward(u, i, j);
-                double uyv = opticalflow::gradients::partial_y_forward(u, i, j);
+                double uxv = opticalflow::gradients::dx(u, i, j);
+                double uyv = opticalflow::gradients::dy(u, i, j);
 
                 norm += std::sqrt(uxv*uxv + uyv*uyv);
             }
@@ -34,8 +34,8 @@ namespace denoise {
         double norm(0.0);
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                double uxv = opticalflow::gradients::partial_x_forward(u, i, j) - vx.get_val(i,j);
-                double uyv = opticalflow::gradients::partial_y_forward(u, i, j) - vy.get_val(i,j);
+                double uxv = opticalflow::gradients::dx(u, i, j) - vx.get_val(i,j);
+                double uyv = opticalflow::gradients::dy(u, i, j) - vy.get_val(i,j);
 
                 norm += std::sqrt(uxv*uxv + uyv*uyv);
             }
@@ -49,10 +49,10 @@ namespace denoise {
         double norm(0.0);
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                const double Evbarxx = opticalflow::gradients::partial_x_forward(vx, i, j);
-                const double Evbaryy = opticalflow::gradients::partial_y_forward(vy, i, j);
-                const double Evbarxy = 0.5 * (opticalflow::gradients::partial_x_forward(vy,i,j) + 
-                                              opticalflow::gradients::partial_y_forward(vx,i,j));
+                const double Evbarxx = opticalflow::gradients::dx(vx, i, j);
+                const double Evbaryy = opticalflow::gradients::dy(vy, i, j);
+                const double Evbarxy = 0.5 * (opticalflow::gradients::dx(vy,i,j) + 
+                                              opticalflow::gradients::dy(vx,i,j));
 
                 norm += std::sqrt(Evbarxx*Evbarxx + Evbaryy*Evbaryy + 2*Evbarxy*Evbarxy);
             }
@@ -70,8 +70,8 @@ namespace denoise {
 
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                px.set_val(px.get_val(i,j) + sigma * (opticalflow::gradients::partial_x_forward(ubar, i, j)),i,j);
-                py.set_val(py.get_val(i,j) + sigma * (opticalflow::gradients::partial_y_forward(ubar, i, j)),i,j);
+                px.set_val(px.get_val(i,j) + sigma * (opticalflow::gradients::dx(ubar, i, j)),i,j);
+                py.set_val(py.get_val(i,j) + sigma * (opticalflow::gradients::dy(ubar, i, j)),i,j);
             }
         }
     }
@@ -84,8 +84,8 @@ namespace denoise {
 
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                px.set_val(px.get_val(i,j) + sigma * (opticalflow::gradients::partial_x_forward(ubar, i, j) - vbarx.get_val(i,j)),i,j);
-                py.set_val(py.get_val(i,j) + sigma * (opticalflow::gradients::partial_y_forward(ubar, i, j) - vbary.get_val(i,j)),i,j);
+                px.set_val(px.get_val(i,j) + sigma * (opticalflow::gradients::dx(ubar, i, j) - vbarx.get_val(i,j)),i,j);
+                py.set_val(py.get_val(i,j) + sigma * (opticalflow::gradients::dy(ubar, i, j) - vbary.get_val(i,j)),i,j);
             }
         }
     }
@@ -97,10 +97,10 @@ namespace denoise {
 
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                const double Evbarxx = opticalflow::gradients::partial_x_forward(vbarx, i, j);
-                const double Evbaryy = opticalflow::gradients::partial_y_forward(vbary, i, j);
-                const double Evbarxy = 0.5 * (opticalflow::gradients::partial_x_forward(vbary,i,j) + 
-                                              opticalflow::gradients::partial_y_forward(vbarx,i,j));
+                const double Evbarxx = opticalflow::gradients::dx(vbarx, i, j);
+                const double Evbaryy = opticalflow::gradients::dy(vbary, i, j);
+                const double Evbarxy = 0.5 * (opticalflow::gradients::dx(vbary,i,j) + 
+                                              opticalflow::gradients::dy(vbarx,i,j));
 
                 qxx.set_val(qxx.get_val(i,j) + sigma * Evbarxx,i,j);
                 qyy.set_val(qyy.get_val(i,j) + sigma * Evbaryy,i,j);
@@ -116,7 +116,7 @@ namespace denoise {
 
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                const double divp = opticalflow::gradients::partial_x_backwards(px,i,j) + opticalflow::gradients::partial_y_backwards(py,i,j);
+                const double divp = opticalflow::gradients::adjoint_dx(px,i,j) + opticalflow::gradients::adjoint_dy(py,i,j);
                 u.set_val(u.get_val(i,j) + tau*divp,i,j);
             }
         }
@@ -131,8 +131,8 @@ namespace denoise {
 
         for (std::size_t j = 0; j < dimin.y; ++j) {
             for (std::size_t i = 0; i < dimin.x; ++i) {
-                const double divqx = opticalflow::gradients::partial_x_backwards(qxx,i,j) + opticalflow::gradients::partial_y_backwards(qxy,i,j);
-                const double divqy = opticalflow::gradients::partial_y_backwards(qyy,i,j) + opticalflow::gradients::partial_x_backwards(qxy,i,j);
+                const double divqx = opticalflow::gradients::adjoint_dx(qxx,i,j) + opticalflow::gradients::adjoint_dy(qxy,i,j);
+                const double divqy = opticalflow::gradients::adjoint_dy(qyy,i,j) + opticalflow::gradients::adjoint_dx(qxy,i,j);
 
                 vx.set_val(vx.get_val(i,j) + tau * (px.get_val(i,j) + divqx), i,j);
                 vy.set_val(vy.get_val(i,j) + tau * (py.get_val(i,j) + divqy), i,j);
